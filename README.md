@@ -1,2 +1,2 @@
-# serve
+# Server
 Test NestJs + MongoDB
