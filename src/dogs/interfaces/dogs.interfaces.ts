@@ -15,5 +15,5 @@ export interface Dogs extends Document {
   diet: string;
   geo_range: string;
   image_link: string;
-  id: number;
+  _id: number;
 }
