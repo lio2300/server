@@ -8,13 +8,55 @@ import { Dogs } from '../interfaces/dogs.interfaces';
 export class DogsService {
   constructor(@InjectModel('Dogs') private dogsModel: Model<Dogs>) {}
 
-  async getDogs(skip: number, limit: number): Promise<DogsTableDto> {
+  async getDogs(
+    skip: number,
+    limit: number,
+    search: string,
+    sortBy: string,
+    orderBy: string,
+  ): Promise<DogsTableDto> {
+    const filters = {
+      name: 'name',
+      latin_name: 'latin_name',
+      animal_type: 'animal_type',
+      geo_range: 'geo_range',
+      habitat: 'habitat',
+    };
+    const orders = {
+      asc: 1,
+      desc: -1,
+    };
+
+    const order = !orders[orderBy] ? -1 : orders[orderBy];
+
+    const sort = !filters[sortBy]
+      ? { _id: -1 }
+      : JSON.parse(`{ "${filters[sortBy]}" : ${order} }`);
+
     const data = await this.dogsModel
-      .find()
-      .sort({ _id: -1 })
+      .find({
+        $or: [
+          { name: new RegExp(search, 'gi') },
+          { latin_name: new RegExp(search, 'gi') },
+          { animal_type: new RegExp(search, 'gi') },
+          { geo_range: new RegExp(search, 'gi') },
+          { habitat: new RegExp(search, 'gi') },
+        ],
+      })
+      .sort(sort)
       .skip(skip)
       .limit(limit);
-    const total = await this.dogsModel.count();
+    const total = await this.dogsModel
+      .find({
+        $or: [
+          { name: new RegExp(search, 'gi') },
+          { latin_name: new RegExp(search, 'gi') },
+          { animal_type: new RegExp(search, 'gi') },
+          { geo_range: new RegExp(search, 'gi') },
+          { habitat: new RegExp(search, 'gi') },
+        ],
+      })
+      .count();
     return { data, total };
   }
 
@@ -35,8 +77,7 @@ export class DogsService {
     return await this.dogsModel.findByIdAndDelete(_id);
   }
 
-  async updateDog(dog: DogsCreateDto): Promise<DogsCreateDto> {
-    const newDog = new this.dogsModel(dog);
-    return await newDog.update();
+  async updateDog(dog: Dogs): Promise<Dogs> {
+    return await this.dogsModel.findByIdAndUpdate(dog._id, dog, { new: true });
   }
 }

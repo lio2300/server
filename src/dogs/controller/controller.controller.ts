@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { DogsTableDto } from '../dto/dogs-table.dto';
 import { DogsCreateDto } from '../dto/dogs.dto';
+import { Dogs } from '../interfaces/dogs.interfaces';
 import { DogsService } from '../service/service.service';
 
 @Controller('dogs')
@@ -17,8 +18,14 @@ export class ControllerController {
   constructor(private dogsService: DogsService) {}
 
   @Get('all')
-  getDogs(@Query('skip') skip, @Query('limit') limit): Promise<DogsTableDto> {
-    return this.dogsService.getDogs(skip, limit);
+  getDogs(
+    @Query('skip') skip,
+    @Query('limit') limit,
+    @Query('search') search,
+    @Query('sortBy') sortBy,
+    @Query('orderBy') orderBy,
+  ): Promise<DogsTableDto> {
+    return this.dogsService.getDogs(skip, limit, search, sortBy, orderBy);
   }
 
   @Post('create')
@@ -37,7 +44,7 @@ export class ControllerController {
   }
 
   @Post('update')
-  updateDog(@Body() dog: DogsCreateDto): Promise<DogsCreateDto> {
+  updateDog(@Body() dog: Dogs): Promise<Dogs> {
     return this.dogsService.updateDog(dog);
   }
 }
