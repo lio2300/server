@@ -33,31 +33,35 @@ export class DogsService {
       ? { _id: -1 }
       : JSON.parse(`{ "${filters[sortBy]}" : ${order} }`);
 
+    const expressions = [
+      { name: new RegExp(search, 'gi') },
+      { latin_name: new RegExp(search, 'gi') },
+      { animal_type: new RegExp(search, 'gi') },
+      { geo_range: new RegExp(search, 'gi') },
+      { habitat: new RegExp(search, 'gi') },
+    ];
+
     const data = await this.dogsModel
       .find({
-        $or: [
-          { name: new RegExp(search, 'gi') },
-          { latin_name: new RegExp(search, 'gi') },
-          { animal_type: new RegExp(search, 'gi') },
-          { geo_range: new RegExp(search, 'gi') },
-          { habitat: new RegExp(search, 'gi') },
-        ],
+        $or: expressions,
       })
       .sort(sort)
       .skip(skip)
       .limit(limit);
     const total = await this.dogsModel
       .find({
-        $or: [
-          { name: new RegExp(search, 'gi') },
-          { latin_name: new RegExp(search, 'gi') },
-          { animal_type: new RegExp(search, 'gi') },
-          { geo_range: new RegExp(search, 'gi') },
-          { habitat: new RegExp(search, 'gi') },
-        ],
+        $or: expressions,
       })
       .count();
     return { data, total };
+  }
+
+  async getDogsStatistics(): Promise<any> {
+    const barChartData = await this.dogsModel.aggregate([
+      { $group: { _id: '$animal_type', count: { $sum: 1 } } },
+    ]);
+
+    return { barChartData };
   }
 
   async createDog(dog: DogsCreateDto): Promise<DogsCreateDto> {
@@ -73,7 +77,7 @@ export class DogsService {
     return dogsSaved;
   }
 
-  async deleteDog(_id: string): Promise<any> {
+  async deleteDog(_id: string): Promise<DogsCreateDto[]> {
     return await this.dogsModel.findByIdAndDelete(_id);
   }
 

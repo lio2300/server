@@ -27,6 +27,10 @@ export class ControllerController {
   ): Promise<DogsTableDto> {
     return this.dogsService.getDogs(skip, limit, search, sortBy, orderBy);
   }
+  @Get('statistics')
+  getDogsStatics(): Promise<any> {
+    return this.dogsService.getDogsStatistics();
+  }
 
   @Post('create')
   createDog(@Body() dog: DogsCreateDto): Promise<DogsCreateDto> {
