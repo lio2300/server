@@ -8,6 +8,16 @@ import { Dogs } from '../interfaces/dogs.interfaces';
 export class DogsService {
   constructor(@InjectModel('Dogs') private dogsModel: Model<Dogs>) {}
 
+  /**
+   * *Returns the records associated with the range and filters specified from database
+   *
+   * @param skip
+   * @param limit
+   * @param search
+   * @param sortBy
+   * @param orderBy
+   * @returns {Promise<DogsTableDto>}
+   */
   async getDogs(
     skip: number,
     limit: number,
@@ -56,6 +66,11 @@ export class DogsService {
     return { data, total };
   }
 
+  /**
+   * *Return data specific for show in the chart from database
+   *
+   * @returns { typeOf barChartData }
+   */
   async getDogsStatistics(): Promise<any> {
     const barChartData = await this.dogsModel.aggregate([
       { $group: { _id: '$animal_type', count: { $sum: 1 } } },
@@ -64,11 +79,23 @@ export class DogsService {
     return { barChartData };
   }
 
+  /**
+   * *Create a new dog into database and return
+   *
+   * @param dog DogsCreateDto
+   * @returns { Promise<DogsCreateDto> }
+   */
   async createDog(dog: DogsCreateDto): Promise<DogsCreateDto> {
     const newDog = new this.dogsModel(dog);
     return await newDog.save();
   }
 
+  /**
+   * *Create many records into database using a loop and return all records saves
+   *
+   * @param dogs DogsCreateDto[]
+   * @returns {typeOf dogsSaved}
+   */
   async createDogs(dogs: DogsCreateDto[]) {
     let dogsSaved = [];
     for (const dog of dogs) {
@@ -77,10 +104,22 @@ export class DogsService {
     return dogsSaved;
   }
 
+  /**
+   * *Delete dog from database and return the record deleted
+   *
+   * @param _id String
+   * @returns {Promise<DogsCreateDto[]>}
+   */
   async deleteDog(_id: string): Promise<DogsCreateDto[]> {
     return await this.dogsModel.findByIdAndDelete(_id);
   }
 
+  /**
+   * *Update record into database an return the record updated
+   *
+   * @param dog Dogs
+   * @returns {Promise<Dogs>}
+   */
   async updateDog(dog: Dogs): Promise<Dogs> {
     return await this.dogsModel.findByIdAndUpdate(dog._id, dog, { new: true });
   }
